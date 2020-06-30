@@ -1,39 +1,53 @@
 <?php
+require_once(__DIR__ . '/vendor/autoload.php');
+require_once(__DIR__ . '/config.php');
 
-require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/config.php';
+use Facebook\WebDriver;
+use Facebook\WebDriver\WebDriverExpectedCondition;
+use Facebook\WebDriver\WebDriverBy;
+use Facebook\WebDriver\Chrome\ChromeOptions;
+use Facebook\WebDriver\Chrome\ChromeDriver;
+use Facebook\WebDriver\Remote\DesiredCapabilities;
 
-use Goutte\Client;
+class Crawling {
+    public function access()
+    {
+        $screenPath = '/vagrant/screenshot.png';
 
-$cli = getLoggedInClient();
-$home = $cli->request(
-    'GET',
-    'https://hitpo.it-hiroshima.ac.jp/PfStudent/Portal'
-);
-echo $home->filter('.current_page_item')->first()->text();
+        // ダウンロードしたchromedriverのパスを指定
+        $driverPath = realpath("/usr/local/bin/chromedriver");
+        putenv("webdriver.chrome.driver=" . $driverPath);
 
+        // Chromeを起動するときのオプション指定用
+        $options = new ChromeOptions();
 
-function getLoggedInClient(){
-    $topUrl = 'https://hitpo.it-hiroshima.ac.jp/PfStudent/Login?target_url=%2fPfStudent%2fCSLecture';
-    $cli = new Client();
-    $cli->setHeader('User-Agent', "Mozilla/5.0 (X11; Linux x86_64; rv:52.0) Gecko/20100101 Firefox/52.0");
-    $top = $cli->request('GET', $topUrl);
+        // ヘッドレスで起動するように指定
+        $options->addArguments(['--headless']);
 
-    //$cookies = $cli->getCookieJar()->get('__AntiXsrfToken')->getValue();
-    // print_r($cookies);
-    // exit;
+        $caps = DesiredCapabilities::chrome();
+        $caps->setCapability(ChromeOptions::CAPABILITY, $options);
 
-    // $sessions = $top->filter('div.aspNetHidden input')->each(function($inputform){
-    //     // echo "NAME:" . $inputform->attr("name") . "\n";
-    //     // echo "VALUE:" . $inputform->attr("value") . "\n";
-    //     return array($inputform->attr("name") => $inputform->attr("value"));
-    // });
+        $driver = ChromeDriver::start($caps);
 
-    // $top = $cli->request('POST', $topUrl);
+        $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/Login?target_url=%2fPfStudent%2fPortal');
 
-    $loginForm = $top->filter('form')->form();
-    $loginForm['ctl00$MainContent$login_id']        = LOGIN_ID;
-    $loginForm['ctl00$MainContent$login_password']  = LOGIN_PASSWORD;
-    $cli->submit($loginForm);
-    return $cli;
+        // テキストボックス入力
+        $driver->findElement(WebDriverBy::id('MainContent_login_id'))->sendKeys(LOGIN_ID);
+
+        $driver->findElement(WebDriverBy::id('MainContent_login_password'))->sendKeys(LOGIN_PASSWORD);
+
+        // ボタン押下
+        $driver->findElement(WebDriverBy::id('MainContent_LoginButton'))->click();
+        
+        $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/Portal');
+
+        // スクリーンショットを保存
+        $driver->takeScreenshot($screenPath);
+
+        // ブラウザを閉じる
+        $driver->close();
+    }
 }
+
+$c = new Crawling();
+$c->access();
