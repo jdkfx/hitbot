@@ -12,8 +12,6 @@ use Facebook\WebDriver\Remote\DesiredCapabilities;
 class Crawling {
     public function access()
     {
-        $screenPath = '/vagrant/screenshot.png';
-
         // ダウンロードしたchromedriverのパスを指定
         $driverPath = realpath("/usr/local/bin/chromedriver");
         putenv("webdriver.chrome.driver=" . $driverPath);
@@ -39,10 +37,12 @@ class Crawling {
         // ボタン押下
         $driver->findElement(WebDriverBy::id('MainContent_LoginButton'))->click();
         
-        $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/Portal');
+        $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/CSLecture');
 
-        // スクリーンショットを保存
-        $driver->takeScreenshot($screenPath);
+        $result = $driver->findElement(WebDriverBy::id('MainContent_CancelLectureGView'))->getText();
+
+        var_dump($result);
+        exit;
 
         // ブラウザを閉じる
         $driver->close();
