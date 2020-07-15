@@ -8,6 +8,7 @@ use Facebook\WebDriver\WebDriverBy;
 use Facebook\WebDriver\Chrome\ChromeOptions;
 use Facebook\WebDriver\Chrome\ChromeDriver;
 use Facebook\WebDriver\Remote\DesiredCapabilities;
+use Abraham\TwitterOAuth\TwitterOAuth;
 
 class Crawling {
     public function access()
@@ -39,9 +40,22 @@ class Crawling {
         
         $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/CSLecture');
 
+        $twitter = new TwitterOAuth(APIKey, APISecretKey, AccessToken, AccessTokenSecret);
+
         $results = $driver->findElements(WebDriverBy::xpath("(//table[@id='MainContent_CancelLectureGView'])/tbody/tr[1 < position()]"));
         foreach ($results as $result) {
-            var_dump($result->getText());
+            $twitter->post(
+                "statuses/update",
+                array("status" => $result->getText())
+            );
+        }
+
+        if($twitter->getLastHttpCode() == 200) {
+            // ツイート成功
+            print "tweeted\n";
+        } else {
+            // ツイート失敗
+            print "tweet failed\n";
         }
 
         // ブラウザを閉じる

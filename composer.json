@@ -1,5 +1,6 @@
 {
     "require": {
-        "facebook/webdriver": "^1.7"
+        "facebook/webdriver": "^1.7",
+        "abraham/twitteroauth": "^1.0.0"
     }
 }
