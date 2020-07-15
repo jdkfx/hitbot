@@ -39,10 +39,10 @@ class Crawling {
         
         $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/CSLecture');
 
-        $result = $driver->findElement(WebDriverBy::id('MainContent_CancelLectureGView'))->getText();
-
-        var_dump($result);
-        exit;
+        $results = $driver->findElements(WebDriverBy::xpath("(//table[@id='MainContent_CancelLectureGView'])/tbody/tr[1 < position()]"));
+        foreach ($results as $result) {
+            var_dump($result->getText());
+        }
 
         // ブラウザを閉じる
         $driver->close();
