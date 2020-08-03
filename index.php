@@ -40,22 +40,29 @@ class Crawling {
         
         $driver->get('https://hitpo.it-hiroshima.ac.jp/PfStudent/CSLecture');
 
-        $twitter = new TwitterOAuth(APIKey, APISecretKey, AccessToken, AccessTokenSecret);
+        function tweet(string $title, string $data)
+        {
+            $twitter = new TwitterOAuth(APIKey, APISecretKey, AccessToken, AccessTokenSecret);
 
-        $results = $driver->findElements(WebDriverBy::xpath("(//table[@id='MainContent_CancelLectureGView'])/tbody/tr[1 < position()]"));
-        foreach ($results as $result) {
             $twitter->post(
                 "statuses/update",
-                array("status" => $result->getText())
+                array("status" => "【${title}】$data")
             );
+
+            if($twitter->getLastHttpCode() != 200) {
+                // ツイート失敗
+                print "tweet failed\n";
+            }
         }
 
-        if($twitter->getLastHttpCode() == 200) {
-            // ツイート成功
-            print "tweeted\n";
-        } else {
-            // ツイート失敗
-            print "tweet failed\n";
+        $resultsOfCancelLecture = $driver->findElements(WebDriverBy::xpath("(//table[@id='MainContent_CancelLectureGView'])/tbody/tr[1 < position()]"));
+        foreach ($resultsOfCancelLecture as $result) {
+            tweet("休講情報", $result->getText());
+        }
+
+        $resultsOfSupLecture = $driver->findElements(WebDriverBy::xpath("(//table[@id='MainContent_SupLectureGView'])/tbody/tr[1 < position()]"));
+        foreach($resultsOfSupLecture as $result) {
+            tweet("補講情報", $result->getText());
         }
 
         // ブラウザを閉じる
