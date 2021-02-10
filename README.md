@@ -67,7 +67,12 @@ $ composer install
 $ composer update
 ```
 
-php の実行
+php の実行（休講・補講情報の取得とツイート）
 ```
 $ php index.php
+```
+
+php の実行（過去のツイートを全て削除）
+```
+$ php delete-tw.php
 ```
